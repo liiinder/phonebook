@@ -1,3 +1,4 @@
+const { application } = require('express')
 const express = require('express')
 const app = express()
 
@@ -47,6 +48,42 @@ app.get('/api/persons/:id', (req, res) => {
     } else {
         res.status(404).send(`There is no entry with id #${id}`).end()
     }
+})
+
+app.delete('/api/persons/:id', (req, res) => {
+    const id = Number(req.params.id)
+    persons = persons.filter(p => p.id !== id)
+
+    res.status(204).end()
+})
+
+const generateId = () => {
+    return Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER));
+}
+
+app.post('/api/persons', (req, res) => {
+    const body = req.body
+
+    if (!body.number) {
+        return res.status(400).json({
+            error: 'Phonenumber is missing'
+        })
+    } else if (!body.name) {
+        return res.status(400).json({
+            error: 'Name is missing'
+        })
+    }
+
+    const person = {
+        id: generateId(),
+        name: body.name,
+        number: body.number,
+
+    }
+
+    persons = persons.concat(person)
+
+    res.json(person)
 })
 
 const PORT = 3001
