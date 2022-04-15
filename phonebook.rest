@@ -8,3 +8,15 @@ get http://localhost:3001/api/persons/1
 
 ###
 get http://localhost:3001/api/persons/5
+
+###
+delete http://localhost:3001/api/persons/1
+
+###
+post http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Kristoffer Linde",
+    "number": "0702729535"
+}
