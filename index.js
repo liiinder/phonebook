@@ -50,10 +50,6 @@ app.delete('/api/persons/:id', (req, res) => {
     res.status(204).end()
 })
 
-const generateId = () => {
-    return Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER));
-}
-
 app.post('/api/persons', (req, res) => {
     const body = req.body
 
@@ -65,20 +61,21 @@ app.post('/api/persons', (req, res) => {
         return res.status(400).json({
             error: 'Name is missing'
         })
-    } else if (persons.find(person => person.name === body.name)) {
-        return res.status(400).json({
-            error: 'Name must be unique'
-        })
-    }
+    } 
+    // else if (persons.find(person => person.name === body.name)) {
+    //     return res.status(400).json({
+    //         error: 'Name must be unique'
+    //     })
+    // }
 
-    const person = {
-        id: generateId(),
+    const person = new Person({
         name: body.name,
-        number: body.number,
-    }
+        number: body.number
+    })
 
-    persons = persons.concat(person)
-    res.json(person)
+    person.save().then(savedPerson => {
+        res.json(person)
+    })
 })
 
 const PORT = process.env.PORT || 3001
