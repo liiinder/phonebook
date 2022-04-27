@@ -82,6 +82,18 @@ app.put('/api/persons/:id', (req, res) => {
         }).catch(error => next(error))
 })
 
+app.get('/info', (req, res) => {
+
+    Person.countDocuments().then(entries => {
+        res.send(`
+            <div>
+            <p>Phonebook has info for ${entries} people</p>
+            <p>${new Date()}</p>
+            </div>
+        `)
+    })
+})
+
 const unknownEndpoint = (req, res) => {
     res.status(404).send({ error: 'unknown endpoint'})
 }
