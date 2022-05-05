@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { application } = require('express')
+const { application, json } = require('express')
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
@@ -36,14 +36,14 @@ app.get('/api/persons/:id', (req, res, next) => {
         }).catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
+app.delete('/api/persons/:id', (req, res, next) => {
     Person.findByIdAndRemove(req.params.id)
         .then(result => {
             res.status(204).end()
         }).catch(error => next(error))
 })
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const body = req.body
 
     if (!body.number) {
@@ -63,20 +63,19 @@ app.post('/api/persons', (req, res) => {
 
     person.save().then(savedPerson => {
         res.json(person)
-    })
+    }).catch(error => next(error))
 })
 
-app.put('/api/persons/:id', (req, res) => {
-    const body = req.body
-
-    const person = {
-        name: body.name,
-        number: body.number
-    }
+app.put('/api/persons/:id', (req, res, next) => {
+    const { name, number } = req.body
 
     console.log('req', req)
 
-    Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    Person.findByIdAndUpdate(
+        req.params.id,
+        { name, number },
+        { new: true, runValidators: true, context: 'query' }
+    )
         .then(updatedPerson => {
             res.json(updatedPerson)
         }).catch(error => next(error))
@@ -101,10 +100,14 @@ const unknownEndpoint = (req, res) => {
 app.use(unknownEndpoint)
 
 const errorHandler = (error, req, res, next) => {
-    console.error(error.message)
+    console.log("--------");
+    console.error("error.message", error.message)
+    console.log("--------");
 
     if (error.name === 'CastError') {
-        return res.status(400).sent({ error: 'malformated id'})
+        return res.status(400).json({ error: 'malformated id'})
+    } else if (error.name === 'ValidationError') {
+        return res.status(400).json({ error: error.message })
     }
 
     next(error)
